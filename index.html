@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ремонты">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Журнал ремонтов</title>
+<style>
+  :root, :root[data-theme="dark"] {
+    --bg:#000; --surface:#1a1a1c; --surface2:#2a2a2d; --fg:#fff; --muted:#8e8e93; --line:#2c2c2f;
+    --accent:#6256ff; --accent-fg:#fff;
+    --green:#19c37d; --orange:#ff8a1f; --red:#ff5a4f; --pink:#ff6fb5;
+    --tile-ok:#0d3b2b; --tile-wait:#3a2a0a; --tile-bad:#431614;
+    --s1:#3987e5; --s2:#d95926;
+    --e-client:#f2a1c6; --e-note:#9b9ba6; --e-time:#7e7e89; --e-status:#f0b45b; --e-wait-bg:#2b2210; --e-ok:#3fd698; --e-ok-bg:#0e3a2b; --e-bad:#ff6259;
+    --good:#19c37d; --bad:#ff7a6e;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    --bg:#f2f2f7; --surface:#fff; --surface2:#ececf0; --fg:#000; --muted:#6b6b72; --line:#e3e3e8;
+    --accent:#5b4fe8; --accent-fg:#fff;
+    --green:#0f9d63; --orange:#d9660a; --red:#d23a2c; --pink:#d6307f;
+    --tile-ok:#d6f2e6; --tile-wait:#fde8cf; --tile-bad:#fbdcd8;
+    --s1:#2a78d6; --s2:#eb6834;
+    --e-client:#c2447f; --e-note:#6b6b72; --e-time:#8a8a92; --e-status:#b97309; --e-wait-bg:#fbebd0; --e-ok:#0b8f5a; --e-ok-bg:#d6f2e6; --e-bad:#d1342a;
+    --good:#0f7a4d; --bad:#a42a1d;
+    color-scheme: light;
+  }
+  :root {
+    --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.35; margin: 0;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+    font-variant-numeric: tabular-nums;
+  }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; }
+  svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+  /* шапка */
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .pill { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
+  .brand { gap: 10px; padding: 5px 18px 5px 5px; cursor: pointer; text-align: left; min-width: 0; }
+  .brand { padding: 5px !important; flex: none !important; width: auto !important; }
+  .brand-n { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; line-height: 1; }
+  .top { display: grid !important; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .top .brand { justify-self: start; }
+  .top .top-actions { justify-self: end; }
+  .top-title { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; line-height: 1.15; }
+  .top-title b { font-size: 18px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+  .top-title span { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
+  .brand-ic { width: auto !important; border-radius: 999px !important; min-width: 42px; padding: 0 10px; color: var(--green) !important; }
+  .brand-ic { width: 42px; height: 42px; border-radius: 50%; background: var(--tile-wait); color: var(--orange); display: grid; place-items: center; flex: none; }
+  .brand-t { display: flex; flex-direction: column; min-width: 0; }
+  .brand-t b { font-weight: 600; font-size: 16px; line-height: 1.15; }
+  .brand-t span { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .round { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); display: grid; place-items: center; padding: 0; cursor: pointer; flex: none; }
+
+  /* итог */
+  .hero { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0 4px; }
+  .period { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+  .nav { gap: 2px; padding: 3px; }
+  .nav button { width: 38px; height: 38px; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--fg); }
+  .nav button:disabled { opacity: .25; cursor: default; }
+  .nav span { min-width: 150px; text-align: center; font-weight: 500; }
+  .big { font-size: 52px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; text-align: center; }
+  .big small { font-size: .62em; font-weight: 600; }
+  .hero-sub { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; font-weight: 500; }
+  .stat { display: inline-flex; align-items: center; gap: 8px; }
+  .stat i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 14px; }
+  .stat.g { color: var(--green); } .stat.g i { background: var(--tile-ok); }
+  .stat.o { color: var(--orange); } .stat.o i { background: var(--tile-wait); }
+  .stat em { font-style: normal; color: var(--muted); font-weight: 400; font-size: 13px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; width: 100%; max-width: 340px; }
+  .seg button { border: 0; background: none; border-radius: 999px; min-height: 40px; font-size: 15px; cursor: pointer; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); font-weight: 600; }
+  .big-cap { color: var(--muted); font-size: 15px; margin-bottom: -4px; }
+  .brand { flex: 1 1 auto; min-width: 0; }
+  .top-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+  .tools-pill { padding: 3px; gap: 0; height: 52px; }
+  .tools-pill button { width: 46px; height: 46px; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; color: var(--fg); cursor: pointer; padding: 0; }
+  .tools-pill button[aria-pressed="true"], .tools-pill button[aria-selected="true"].on { background: var(--surface2); }
+  .seg, .nav { width: 100%; max-width: 340px; height: 52px; padding: 4px; }
+  .nav { justify-content: space-between; gap: 0; }
+  .nav button { width: 44px; height: 44px; }
+  .nav span { flex: 1; min-width: 0; }
+  .seg button { min-height: 0; height: 100%; }
+  .period { width: 100%; justify-content: center; }
+  .brand-ic, .auth-logo { background: var(--tile-ok); color: var(--green); }
+  .dayblock .seg { max-width: none; grid-template-columns: repeat(4, 1fr); height: 48px; }
+  .dayblock .seg button { font-size: 14px; padding: 0 2px; }
+  .dayblock .nav { max-width: none; height: 52px; }
+  .nav span { display: flex; align-items: center; justify-content: center; text-align: center; }
+  .nav .navpick:focus-within, .nav .navpick input:focus-visible, .nav .navpick select:focus-visible { outline: none; border: 0; }
+  .nav .navpick { position: relative; cursor: pointer; background: none !important; -webkit-tap-highlight-color: transparent; text-align: center; }
+  .nav .navpick::after { content: "▾"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; }
+  .nav .navpick select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; border: 0; -webkit-appearance: none; appearance: none; }
+  .nav .navpick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; border: 0; padding: 0; margin: 0; background: transparent; outline: none; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
+  .dayblock .chev { font-size: 26px; line-height: 1; }
+  .day-big { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 2px; }
+  .day-big small { color: var(--muted); font-size: 14px; }
+  .day-big b { font-size: 44px; line-height: 1.1; font-weight: 700; color: var(--green); letter-spacing: -.02em; }
+  .dayblock .kpis { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .dayblock .kpi { background: var(--surface2); padding: 10px 9px 10px 11px; }
+  .dayblock .kpi-value { font-size: clamp(12px, 3.85vw, 15px); white-space: nowrap; }
+  #notes-sheet .sheet-body { max-height: 75vh; }
+  .notes-head { display: flex; justify-content: space-between; align-items: center; margin: 2px 0 14px; }
+  .notes-head h2 { margin: 0; font-size: 22px; font-weight: 700; }
+  .notes-head .ghost { min-height: 40px; }
+  .notes-form { display: flex; gap: 10px; margin-bottom: 14px; padding: 0; }
+  .nadd { flex: none; width: 50px; height: 50px; border: 0; border-radius: 50%; background: var(--green); color: #05170f; display: grid; place-items: center; cursor: pointer; }
+  .nrow { display: grid; grid-template-columns: 34px minmax(0,1fr) 40px; gap: 12px; align-items: center; background: var(--surface); border-radius: var(--r); padding: 12px 8px 12px 14px; margin-bottom: 8px; }
+  .ntick { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--muted); background: none; display: grid; place-items: center; padding: 0; cursor: pointer; color: #05170f; }
+  .ntick.on { background: var(--green); border-color: var(--green); }
+  .ntick svg.i { width: 18px; height: 18px; stroke-width: 2.4; }
+  .ntext { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .nt { overflow-wrap: anywhere; font-size: 17px; }
+  .nd { font-size: 13px; color: var(--muted); }
+  .nrow.done .nt { text-decoration: line-through; color: var(--muted); }
+  .ndel { width: 40px; height: 40px; border: 0; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; border-radius: 50%; padding: 0; }
+  .tools { display: flex; flex-direction: column; gap: 10px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; font-size: 14px; min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .searchbar { display: flex; gap: 8px; align-items: center; }
+  .searchbar { max-height: 0; opacity: 0; overflow: hidden; margin-bottom: 0; pointer-events: none; visibility: hidden; transition: max-height .35s cubic-bezier(.4,0,.2,1), opacity .3s ease, margin-bottom .35s cubic-bezier(.4,0,.2,1), visibility 0s linear .35s; }
+  .searchbar.open { max-height: 64px; opacity: 1; margin-bottom: 10px; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+  .searchbar .ghost { flex: none; min-height: 50px; }
+  .searchbar input { background: var(--surface); border-radius: 999px; padding: 0 20px; }
+
+  input, select { font: inherit; font-size: 16px; color: var(--fg); background: var(--surface2); border: 1px solid transparent; border-radius: 14px; padding: 0 14px; min-height: 50px; min-width: 0; max-width: 100%; width: 100%; }
+  input::placeholder { color: var(--muted); }
+  input:focus { outline: none; border-color: var(--accent); }
+
+  /* список */
+  .day { display: flex; flex-direction: column; gap: 6px; }
+  .day + .day { margin-top: 12px; }
+  .day-title { display: flex; justify-content: space-between; gap: 12px; margin: 6px 4px 2px; font-size: 14px; font-weight: 400; color: var(--muted); }
+  .day-title .sum { color: var(--e-ok); white-space: nowrap; }
+  .entry { display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 12px; align-items: center; background: var(--surface); border-radius: var(--r); padding: 10px 14px 10px 10px; }
+  .dot { grid-column: 1; width: 48px; height: 48px; border: 0; border-radius: 14px; padding: 0; display: grid; place-items: center; cursor: pointer; }
+  @keyframes enterUp { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .entry.enter { animation: enterUp .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes dotPop { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(25,195,125,.55); } 35% { transform: scale(1.18); } 70% { transform: scale(.97); } 100% { transform: scale(1); box-shadow: 0 0 0 14px rgba(25,195,125,0); } }
+  .dot.pop { animation: dotPop .6s cubic-bezier(.3,.7,.3,1); }
+  @media (prefers-reduced-motion: reduce) { .entry.enter, .dot.pop { animation: none; } }
+  .mini { width: 100%; padding: 6px 4px 2px; }
+  .mini-bars { display: flex; align-items: flex-end; gap: 6px; height: 76px; }
+  .mini.dense .mini-bars, .mini.dense .mini-x { gap: 2px; }
+  .mbar { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .mbar i { display: block; width: 100%; border-radius: 6px 6px 3px 3px; background: var(--green); opacity: .4; transform-origin: bottom; animation: barUp .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 18ms); transition: opacity .2s; }
+  .mini.dense .mbar i { border-radius: 3px 3px 2px 2px; }
+  .mbar.on i { opacity: 1; }
+  .mbar.z i { background: var(--line); opacity: 1; }
+  @keyframes barUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .mini-x { display: flex; gap: 6px; margin-top: 6px; }
+  .mini-x span { flex: 1; min-width: 0; display: flex; justify-content: center; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .mini-read { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 18px; }
+  @media (prefers-reduced-motion: reduce) { .mbar i { animation: none; } }
+  .dot.paid { background: var(--e-ok-bg); color: var(--e-ok); }
+  .dot.unpaid { background: var(--e-wait-bg); color: var(--e-status); }
+  .entry-main { all: unset; box-sizing: border-box; grid-column: 2; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; padding: 2px 0; }
+  .e-left { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .e-title { overflow-wrap: anywhere; }
+  .e-client { color: var(--e-client); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+  .e-device { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
+  .e-sub { color: var(--e-time); font-size: 14px; overflow-wrap: anywhere; }
+  .e-note { color: var(--e-note); font-size: 13px; overflow-wrap: anywhere; }
+  .e-flag { font-size: 12px; font-weight: 500; color: var(--e-bad); }
+  .e-flag.e-ok { color: var(--e-ok); }
+  .e-work { color: var(--e-status); font-weight: 500; }
+  .e-right { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .e-got { font-size: 17px; font-weight: 600; color: var(--e-ok); white-space: nowrap; }
+  .e-got.unpaid { color: var(--fg); }
+  .e-price { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .empty { margin: 8px 4px; color: var(--muted); }
+  .empty strong { display: block; color: var(--fg); font-size: 17px; margin-bottom: 2px; }
+
+  /* плавающая панель */
+  .dock { position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; align-items: center; gap: 16px; z-index: 20; pointer-events: none; }
+  .dock .bar { pointer-events: auto; display: flex; align-items: center; justify-content: space-evenly; width: min(356px, calc(100% - 28px)); height: 60px; padding: 5px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--line); box-shadow: 0 8px 28px rgba(0,0,0,.4); }
+  .dock .bi { flex: 1 1 0; max-width: 74px; height: 48px; border: 0; background: none; color: var(--fg); border-radius: 999px; display: grid; place-items: center; padding: 0; cursor: pointer; }
+  .dock .bi svg.i { width: 26px; height: 26px; }
+  .dock .bi[aria-selected="true"], .dock .bi[aria-pressed="true"] { background: var(--surface2); }
+  .dock .bi.add { background: var(--green); color: #05170f; max-width: 58px; flex-basis: 58px; }
+  body[data-tab="stats"] #open-add { display: none; }
+  .dock::before { content: ""; position: absolute; left: 0; right: 0; bottom: calc(-18px - env(safe-area-inset-bottom, 0px)); height: calc(150px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 92%, transparent) 70%, var(--bg)); pointer-events: none; z-index: -1; }
+
+  /* шторка и настройки */
+  .sheet { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; justify-content: flex-end; }
+  .sheet-bg { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+  .sheet-body { position: relative; background: var(--bg); border-radius: 28px 28px 0 0; max-height: 92vh; overflow-y: auto; padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px)); max-width: 640px; width: 100%; margin: 0 auto; border: 1px solid var(--line); border-bottom: 0; }
+  .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--surface2); margin: 4px auto 10px; }
+  form { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; padding: 4px 0 0; }
+  .form-head { grid-column: 1 / -1; }
+  .form-head h2 { margin: 0; font-size: 22px; font-weight: 700; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 13px; color: var(--muted); padding-left: 4px; }
+  .pick { position: relative; display: flex; align-items: center; min-height: 50px; padding: 0 14px; background: var(--surface2); border: 1px solid transparent; border-radius: 14px; overflow: hidden; }
+  .pick:focus-within { border-color: transparent; outline: none; }
+  .pick-text { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pick-text.empty { color: var(--muted); }
+  .pick input { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; padding: 0; border: 0; opacity: 0; font-size: 16px; cursor: pointer; }
+  .field.money { display: flex; flex-direction: row; gap: 10px; }
+  .money .field { flex: 1 1 0; min-width: 0; }
+  .money input { padding: 0 12px; -moz-appearance: textfield; }
+  .money input::-webkit-inner-spin-button, .money input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .share { grid-column: 1 / -1; margin: -4px 0 0; font-size: 14px; color: var(--muted); }
+  .share:empty { display: none; }
+  .form-actions { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .sub-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .primary { width: 100%; font-weight: 600; font-size: 17px; min-height: 56px; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-fg); cursor: pointer; }
+  .primary:disabled { opacity: .55; }
+  .ghost { font-size: 16px; min-height: 48px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--surface2); color: var(--fg); cursor: pointer; }
+  .ghost.danger { color: var(--red); }
+  .ghost.danger[data-armed="1"] { background: var(--red); color: #fff; font-weight: 600; }
+
+  .set-head { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; margin: 4px 0 18px; }
+  .set-head h2 { margin: 0; text-align: center; font-size: 20px; font-weight: 600; }
+  .group-t { margin: 18px 6px 8px; font-size: 15px; color: var(--muted); }
+  .group { background: var(--surface); border-radius: var(--r); overflow: hidden; }
+  .row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 58px; padding: 0 18px; border: 0; background: none; text-align: left; cursor: pointer; font-size: 17px; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .row .v { margin-left: auto; color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row.red { color: var(--red); }
+  .sw { margin-left: auto; width: 52px; height: 32px; border-radius: 16px; background: var(--surface2); position: relative; flex: none; transition: background .2s; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .row[aria-checked="true"] .sw { background: var(--green); }
+  .row[aria-checked="true"] .sw::after { transform: translateX(20px); }
+  .set-note { margin: 10px 8px 0; font-size: 13px; color: var(--muted); }
+
+  /* статистика */
+  .kpis { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .kpi { background: var(--surface); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .kpi-label { font-size: 13px; color: var(--muted); }
+  .kpi-value { font-size: 24px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+  .kpi-sub { font-size: 13px; color: var(--muted); min-height: 1.2em; }
+  .up { color: var(--green); font-weight: 500; }
+  .down { color: var(--bad); font-weight: 500; }
+  .panel { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .block { display: flex; flex-direction: column; gap: 10px; min-width: 0; background: var(--surface); border-radius: var(--r); padding: 16px; }
+  .block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .block h2 { margin: 0; font-size: 17px; font-weight: 600; }
+  .block-head h2 { font-size: 17px; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .chart { width: 100%; min-width: 0; touch-action: pan-y; }
+  .chart svg { display: block; max-width: 100%; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .axis { stroke: var(--muted); stroke-width: 1; opacity: .5; }
+  .chart text { font-size: 11px; fill: var(--muted); }
+  .chart text.val { fill: var(--fg); font-weight: 600; }
+  .chart .b1 { fill: var(--s1); } .chart .b2 { fill: var(--s2); } .chart .dim { opacity: .4; }
+  .readout { margin: 0; min-height: 2.8em; font-size: 14px; }
+  .readout b { font-weight: 600; }
+  .rank { display: flex; flex-direction: column; }
+  .rank-head, .rank-row { display: grid; grid-template-columns: minmax(0,1fr) 34px 84px 52px; gap: 8px; align-items: baseline; }
+  .rank-head { padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .rank-head span:not(:first-child), .rank-row .num { text-align: right; }
+  .rank-row { padding: 10px 0 8px; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .rank-row:last-child { border-bottom: 0; }
+  .rank-row .name { min-width: 0; overflow-wrap: anywhere; }
+  .rank-row .num { font-size: 14px; }
+  .rank-row .bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--surface2); overflow: hidden; }
+  .rank-row .bar i { display: block; height: 100%; background: var(--s2); border-radius: 3px; }
+  .more { align-self: flex-start; font-size: 15px; min-height: 40px; padding: 0; border: 0; background: none; color: var(--accent); cursor: pointer; }
+  details { font-size: 15px; }
+  summary { cursor: pointer; min-height: 40px; display: flex; align-items: center; color: var(--accent); }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { padding: 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .note { margin: 0; font-size: 13px; color: var(--muted); }
+
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(118px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); background: var(--fg); color: var(--bg); padding: 12px 18px; border-radius: 999px; font-size: 15px; z-index: 60; }
+  @media (min-width: 560px) { .kpis { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+  @media (max-width: 380px) { form { grid-template-columns: minmax(0,1fr); } .big { font-size: 44px; } }
+
+  /* вход */
+  .auth { min-height: 80vh; display: grid; align-content: center; max-width: 420px; margin: 0 auto; gap: 18px; }
+  .auth-logo { width: 72px; height: 72px; border-radius: 22px; background: var(--tile-wait); color: var(--orange); display: grid; place-items: center; }
+  .auth-logo svg.i { width: 38px; height: 38px; }
+  .auth h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -.01em; }
+  .auth p.lead { margin: 4px 0 0; color: var(--muted); }
+  #authform { grid-template-columns: minmax(0,1fr); background: var(--surface); border-radius: var(--r); padding: 18px; gap: 14px; }
+  .auth-err { margin: 0; min-height: 1.3em; font-size: 14px; color: var(--red); }
+</style>
+</head>
+<body>
+<section class="auth" id="auth" hidden>
+  <div class="auth-logo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.5 18.5h3"/></svg></div>
+  <div><h1>Журнал ремонтов</h1><p class="lead" id="auth-lead">Войдите, чтобы открыть свои записи</p></div>
+  <form id="authform">
+    <div class="field full"><label for="email">Почта</label><input id="email" type="email" autocomplete="username" required></div>
+    <div class="field full"><label for="password">Пароль</label><input id="password" type="password" autocomplete="current-password" required minlength="6"></div>
+    <p class="auth-err" id="autherr" role="alert" style="grid-column:1/-1"></p>
+    <button class="primary" id="login" type="submit" style="grid-column:1/-1">Войти</button>
+    <button class="ghost" id="authswitch" type="button" style="grid-column:1/-1">Нет аккаунта? Зарегистрироваться</button>
+  </form>
+</section>
+
+<main class="wrap" id="app" hidden>
+  <header class="top">
+    <button class="pill brand" id="brand" type="button" aria-selected="true" aria-label="Журнал">
+      <span class="brand-ic"><span id="sub" class="brand-n">…</span></span>
+    </button>
+    <div class="top-title" id="top-title"><b id="top-name"></b><span>журнал ремонтов</span></div>
+    <div class="top-actions">
+            <button class="round" id="open-settings" type="button" aria-label="Настройки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+  </header>
+
+  <section class="panel" id="panel-log" role="tabpanel">
+    <div class="hero">
+      <div class="seg" role="group" aria-label="Период"><button id="m-month" type="button" aria-pressed="true">По месяцам</button><button id="m-all" type="button" aria-pressed="false">За всё время</button></div>
+      <div class="period" id="period"><div class="pill nav"><button id="mprev" type="button" aria-label="Раньше"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span id="mname">—</span><button id="mnext" type="button" aria-label="Позже"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></div>
+      <div class="big" id="big" hidden>0 ₽</div>
+    </div>
+    <div class="tools">
+      <div class="searchbar" id="searchbar"><input id="q" type="search" placeholder="Поиск по устройству, клиенту, описанию" aria-label="Поиск"></div>
+      <div class="chips" id="statuschips" role="group" aria-label="Статус заказа"></div>
+    </div>
+    <div id="list" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="panel-stats" role="tabpanel" hidden>
+    <div id="statsbody"></div>
+  </section>
+</main>
+
+<div class="dock" id="dock" hidden>
+  <div class="bar" role="tablist">
+    <button class="bi" id="tab-log" type="button" role="tab" aria-selected="true" aria-label="Журнал"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.2 12 4l8 7.2V19a1.5 1.5 0 0 1-1.5 1.5H15v-5.7H9v5.7H5.5A1.5 1.5 0 0 1 4 19z"/></svg></button>
+    <button class="bi" id="tab-stats" type="button" role="tab" aria-selected="false" aria-label="Статистика"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg></button>
+    <button class="bi add" id="open-add" type="button" aria-label="Новая запись"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="bi" id="open-notes" type="button" aria-label="Заметки"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3 3V20.5H6z"/><path d="M9 11h6M9 15h4"/></svg></button>
+    <button class="bi" id="open-search" type="button" aria-pressed="false" aria-label="Поиск"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-bg" id="sheet-bg"></div>
+  <div class="sheet-body">
+    <div class="grab"></div>
+    <form id="f" autocomplete="off">
+      <div class="form-head"><h2 id="form-title">Новая запись</h2></div>
+      <div class="field">
+        <label for="device">Устройство</label>
+        <input id="device" required list="models" placeholder="Например, 14 Pro">
+        <datalist id="models">
+          <option value="iPhone X"><option value="iPhone XR"><option value="iPhone XS"><option value="iPhone XS Max">
+          <option value="iPhone 11"><option value="iPhone 11 Pro"><option value="iPhone 11 Pro Max">
+          <option value="iPhone 12 mini"><option value="iPhone 12"><option value="iPhone 12 Pro"><option value="iPhone 12 Pro Max">
+          <option value="iPhone 13 mini"><option value="iPhone 13"><option value="iPhone 13 Pro"><option value="iPhone 13 Pro Max">
+          <option value="iPhone 14"><option value="iPhone 14 Plus"><option value="iPhone 14 Pro"><option value="iPhone 14 Pro Max">
+          <option value="iPhone 15"><option value="iPhone 15 Plus"><option value="iPhone 15 Pro"><option value="iPhone 15 Pro Max">
+          <option value="iPhone 16"><option value="iPhone 16 Plus"><option value="iPhone 16 Pro"><option value="iPhone 16 Pro Max">
+          <option value="iPhone 17"><option value="iPhone 17 Pro"><option value="iPhone 17 Pro Max"><option value="iPhone Air">
+          <option value="iPad"><option value="MacBook"><option value="Apple Watch">
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="client">Клиент</label>
+        <input id="client" placeholder="Имя или компания" autocapitalize="words">
+      </div>
+      <div class="field full">
+        <label for="note">Описание проблемы и решение</label>
+        <input id="note" autocapitalize="sentences" placeholder="Например, замена АКБ, реболл, флюд">
+      </div>
+      <div class="field">
+        <label for="date">Дата</label>
+        <div class="pick"><span class="pick-text" id="date-text"></span><input id="date" type="date" required></div>
+      </div>
+      <div class="field">
+        <label for="time">Время</label>
+        <div class="pick"><span class="pick-text" id="time-text"></span><input id="time" type="time"></div>
+      </div>
+      <div class="field full money">
+        <div class="field" id="price-field">
+          <label for="price">Ремонт, ₽</label>
+          <input id="price" type="number" inputmode="decimal" step="any" min="0" placeholder="0">
+        </div>
+        <div class="field" id="cost-field">
+          <label for="cost">Запчасть, ₽</label>
+          <input id="cost" type="number" inputmode="decimal" step="any" min="0" placeholder="0">
+        </div>
+        <div class="field" id="got-field" hidden>
+          <label for="got">Получил, ₽</label>
+          <input id="got" type="number" inputmode="decimal" step="any" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="field full" id="paidat-field" hidden>
+        <label for="paidat">Дата оплаты</label>
+        <div class="pick"><span class="pick-text" id="paidat-text"></span><input id="paidat" type="date"></div>
+      </div>
+      <p class="share" id="share"></p>
+      <div class="form-actions">
+        <button class="primary" id="save" type="submit">Записать</button>
+        <div class="sub-actions" id="subactions" hidden>
+          <button class="ghost danger" id="del" type="button" data-armed="0">Удалить</button>
+          <button class="ghost" id="cancel" type="button">Отмена</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="sheet" id="notes-sheet" hidden>
+  <div class="sheet-bg" id="notes-bg"></div>
+  <div class="sheet-body">
+    <div class="grab"></div>
+    <div class="notes-head"><h2>Заметки</h2><button class="ghost" id="notes-close" type="button">Готово</button></div>
+    <form id="notes-form" class="notes-form" autocomplete="off">
+      <input id="note-text" placeholder="Например: Дал в долг" autocapitalize="sentences" aria-label="Новая заметка">
+      <button class="nadd" id="notes-add" type="button" aria-label="Добавить заметку"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    </form>
+    <div id="notes-list"></div>
+    <button class="ghost" id="notes-clear" type="button" hidden style="width:100%;margin-top:12px">Удалить выполненные</button>
+  </div>
+</div>
+<div class="sheet" id="settings" hidden style="justify-content:stretch">
+  <div class="sheet-bg" id="settings-bg"></div>
+  <div class="sheet-body" style="margin-top:calc(env(safe-area-inset-top,0px) + 24px); border-radius:28px 28px 0 0; max-height:none; flex:1">
+    <div class="set-head">
+      <button class="round" id="close-settings" type="button" aria-label="Назад"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <h2>Настройки</h2><span></span>
+    </div>
+    <div class="group">
+      <div class="row" style="cursor:default"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Аккаунт</span><span class="v" id="acc-email"></span></div>
+    </div>
+    <p class="group-t">Данные</p>
+    <div class="group">
+      <button class="row" id="export" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span>Экспорт (CSV)</span></button>
+    </div>
+    <p class="set-note">Раз в неделю сохраняйте копию в «Файлы» или на диск: это запасной вариант на случай сбоя.</p>
+    <p class="group-t">Оформление</p>
+    <div class="group">
+      <button class="row" id="theme" type="button" role="switch" aria-checked="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Тёмная тема</span><span class="sw"></span></button>
+    </div>
+    <p class="group-t">Аккаунт</p>
+    <div class="group">
+      <button class="row red" id="logout" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Выйти из приложения</span></button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
